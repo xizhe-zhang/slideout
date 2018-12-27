@@ -62,8 +62,8 @@ function Slideout(options) {
   options = options || {};
 
   // Sets default values
-  this._startOffsetX = 0;
-  this._currentOffsetX = 0;
+  this._startOffsetY = 0;
+  this._currentOffsetY = 0;
   this._opening = false;
   this._moved = false;
   this._opened = false;
@@ -79,7 +79,7 @@ function Slideout(options) {
   this._easing = options.fx || options.easing || 'ease';
   this._duration = parseInt(options.duration, 10) || 300;
   this._tolerance = parseInt(options.tolerance, 10) || 70;
-  this._padding = this._translateTo = parseInt(options.padding, 10) || 256;
+  this._padding = this._translateTo = parseInt(options.padding, 10) || 1024;
   this._orientation = this._side === 'right' ? -1 : 1;
   this._translateTo *= this._orientation;
 
@@ -118,7 +118,7 @@ Slideout.prototype.open = function() {
     html.classList.add('slideout-open');
   }
   this._setTransition();
-  this._translateXTo(this._translateTo);
+  this._translateYTo(this._translateTo);
   this._opened = true;
   setTimeout(function() {
     self.panel.style.transition = self.panel.style['-webkit-transition'] = '';
@@ -137,7 +137,7 @@ Slideout.prototype.close = function() {
   }
   this.emit('beforeclose');
   this._setTransition();
-  this._translateXTo(0);
+  this._translateYTo(0);
   this._opened = false;
   setTimeout(function() {
     html.classList.remove('slideout-open');
@@ -162,11 +162,11 @@ Slideout.prototype.isOpen = function() {
 };
 
 /**
- * Translates panel and updates currentOffset with a given X point
+ * Translates panel and updates currentOffset with a given Y point
  */
-Slideout.prototype._translateXTo = function(translateX) {
-  this._currentOffsetX = translateX;
-  this.panel.style[prefix + 'transform'] = this.panel.style.transform = 'translateX(' + translateX + 'px)';
+Slideout.prototype._translateYTo = function(translateY) {
+  this._currentOffsetY = translateY;
+  this.panel.style[prefix + 'transform'] = this.panel.style.transform = 'translateY(' + translateY + 'px)';
   return this;
 };
 
@@ -218,7 +218,7 @@ Slideout.prototype._initTouchEvents = function() {
 
     self._moved = false;
     self._opening = false;
-    self._startOffsetX = eve.touches[0].pageX;
+    self._startOffsetY = eve.touches[0].pageY;
     self._preventOpen = (!self._touch || (!self.isOpen() && self.menu.clientWidth !== 0));
   };
 
@@ -240,7 +240,7 @@ Slideout.prototype._initTouchEvents = function() {
   this._onTouchEndFn = function() {
     if (self._moved) {
       self.emit('translateend');
-      (self._opening && Math.abs(self._currentOffsetX) > self._tolerance) ? self.open() : self.close();
+      (self._opening && Math.abs(self._currentOffsetY) > self._tolerance) ? self.open() : self.close();
     }
     self._moved = false;
   };
@@ -260,20 +260,20 @@ Slideout.prototype._initTouchEvents = function() {
       return;
     }
 
-    var dif_x = eve.touches[0].clientX - self._startOffsetX;
-    var translateX = self._currentOffsetX = dif_x;
+    var dif_y = eve.touches[0].clientY - self._startOffsetY;
+    var translateY = self._currentOffsetY = dif_y;
 
-    if (Math.abs(translateX) > self._padding) {
+    if (Math.abs(translateY) > self._padding) {
       return;
     }
 
-    if (Math.abs(dif_x) > 20) {
+    if (Math.abs(dif_y) > 20) {
 
       self._opening = true;
 
-      var oriented_dif_x = dif_x * self._orientation;
+      var oriented_dif_y = dif_y * self._orientation;
 
-      if (self._opened && oriented_dif_x > 0 || !self._opened && oriented_dif_x < 0) {
+      if (self._opened && oriented_dif_y > 0 || !self._opened && oriented_dif_y < 0) {
         return;
       }
 
@@ -281,8 +281,8 @@ Slideout.prototype._initTouchEvents = function() {
         self.emit('translatestart');
       }
 
-      if (oriented_dif_x <= 0) {
-        translateX = dif_x + self._padding * self._orientation;
+      if (oriented_dif_y <= 0) {
+        translateY = dif_y + self._padding * self._orientation;
         self._opening = false;
       }
 
@@ -290,8 +290,8 @@ Slideout.prototype._initTouchEvents = function() {
         html.classList.add('slideout-open');
       }
 
-      self.panel.style[prefix + 'transform'] = self.panel.style.transform = 'translateX(' + translateX + 'px)';
-      self.emit('translate', translateX);
+      self.panel.style[prefix + 'transform'] = self.panel.style.transform = 'translateY(' + translateY + 'px)';
+      self.emit('translate', translateY);
       self._moved = true;
     }
 
